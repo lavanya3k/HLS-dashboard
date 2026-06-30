@@ -300,8 +300,9 @@ with tab_tmp:
                      .reindex(dow_order, fill_value=0)
                      .reset_index(name="Count"))
             dow.columns = ["Day", "Count"]
-            fig = px.bar(dow, x="Day", y="HLS granules missing",
-                         color_discrete_sequence=[C_PURPLE], template=T)
+            fig = px.bar(dow, x="Day", y="Count",
+                        labels={"Count": "HLS granules missing"},
+                        color_discrete_sequence=[C_PURPLE], template=T)
             fig.update_layout(height=280, margin=dict(t=20, b=0))
             st.plotly_chart(fig, use_container_width=True)
 
