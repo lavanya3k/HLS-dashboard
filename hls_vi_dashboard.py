@@ -225,7 +225,7 @@ with tab_ov:
     if "Satellite" in df.columns:
         st.markdown("#### Satellite breakdown")
         sat_df = df["Satellite"].value_counts().reset_index()
-        sat_df.columns = ["Satellite", "HLS granule"]
+        sat_df.columns = ["Satellite", "Count"]
         sat_df["Pct"] = (sat_df["Count"] / sat_df["Count"].sum() * 100).round(1)
         fig = px.bar(sat_df, x="Satellite", y="Count",
                      text=sat_df["Pct"].astype(str) + "%",
