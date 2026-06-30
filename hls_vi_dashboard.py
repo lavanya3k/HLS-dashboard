@@ -1,5 +1,5 @@
 """
-hls_vi_dashboard.py
+hls_dashboard.py
 ====================
 Upload one or more HLS-VI missing-granule CSVs directly in the sidebar.
 No build scripts, no data/ folder needed.
@@ -71,7 +71,7 @@ def load_csv(file_bytes: bytes, filename: str) -> pd.DataFrame:
 
 # ── Sidebar ───────────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.title("HLS S30 Analyser")
+    st.title("HLS S30 granule analyser")
 
     uploaded = st.file_uploader(
         "Upload CSV file(s)",
@@ -159,7 +159,7 @@ if df.empty:
 
 # ── Tabs ──────────────────────────────────────────────────────────────────────
 tab_ov, tab_tmp, tab_tiles, tab_qual = st.tabs(
-    ["Overview", "Temporal", "Top tiles", "Quality & inferences"]
+    ["Overview", "Temporal", "Top tiles", "Inferences"]
 )
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -184,12 +184,12 @@ with tab_ov:
     c4.metric("Avg SZA",
               f"{avg_sza:.1f}°"  if avg_sza   is not None else "—",
               f"{pct_hi_sza:.0f}% above 70°" if pct_hi_sza is not None else "")
-    c5.metric("Median lag",
+    c5.metric("ingestion lag",
               f"{med_lag:.1f} h" if med_lag   is not None else "—",
               "pub → ingestion")
     c6.metric("Clear-sky missing",
               f"{pct_clear:.1f}%" if pct_clear is not None else "—",
-              "pipeline bug candidates")
+              "pipeline failure")
 
     st.divider()
     col_l, col_r = st.columns(2)
@@ -200,7 +200,7 @@ with tab_ov:
             fig = px.histogram(df, x="Cloud_Cover", nbins=20,
                                color_discrete_sequence=[C_BLUE], template=T,
                                labels={"Cloud_Cover": "Cloud cover (%)",
-                                       "count": "Granules"})
+                                       "HLS granule (count)": "Granules"})
             fig.add_vline(x=25, line_dash="dash", line_color=C_GREEN,
                           annotation_text="25%", annotation_position="top right")
             fig.add_vline(x=75, line_dash="dash", line_color=C_RED,
@@ -225,7 +225,7 @@ with tab_ov:
     if "Satellite" in df.columns:
         st.markdown("#### Satellite breakdown")
         sat_df = df["Satellite"].value_counts().reset_index()
-        sat_df.columns = ["Satellite", "Count"]
+        sat_df.columns = ["Satellite", "HLS granule"]
         sat_df["Pct"] = (sat_df["Count"] / sat_df["Count"].sum() * 100).round(1)
         fig = px.bar(sat_df, x="Satellite", y="Count",
                      text=sat_df["Pct"].astype(str) + "%",
@@ -265,7 +265,7 @@ with tab_tmp:
                    .sort_values("Acq_Date"))
         daily["Date"] = pd.to_datetime(daily["Acq_Date"])
         n_years = df["Acq_Year"].nunique()
-        fig = px.line(daily, x="Date", y="Count",
+        fig = px.line(daily, x="Date", y="HLS granule count",
                       color="Acq_Year" if n_years > 1 else None,
                       color_discrete_sequence=[C_BLUE, C_PURPLE, C_AMBER,
                                                C_GREEN, C_RED],
@@ -283,9 +283,9 @@ with tab_tmp:
                     .reset_index(name="Count")
                     .sort_values("Acq_Month"))
             fig = px.bar(mo, x="Acq_Month", y="Count",
-                         color="Count",
+                         color="HLS granule count",
                          color_continuous_scale=[[0, C_BLUE], [1, C_RED]],
-                         labels={"Acq_Month": "Month", "Count": "Missing"},
+                         labels={"Acq_Month": "Month", "Count": "HLS granules missing"},
                          template=T)
             fig.update_layout(height=280, margin=dict(t=20, b=0),
                               coloraxis_showscale=False)
@@ -300,7 +300,7 @@ with tab_tmp:
                      .reindex(dow_order, fill_value=0)
                      .reset_index(name="Count"))
             dow.columns = ["Day", "Count"]
-            fig = px.bar(dow, x="Day", y="Count",
+            fig = px.bar(dow, x="Day", y="HLS granules missing",
                          color_discrete_sequence=[C_PURPLE], template=T)
             fig.update_layout(height=280, margin=dict(t=20, b=0))
             st.plotly_chart(fig, use_container_width=True)
