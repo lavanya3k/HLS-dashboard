@@ -265,7 +265,7 @@ with tab_tmp:
                    .sort_values("Acq_Date"))
         daily["Date"] = pd.to_datetime(daily["Acq_Date"])
         n_years = df["Acq_Year"].nunique()
-        fig = px.line(daily, x="Date", y="HLS granule count",
+        fig = px.line(daily, x="Date", y="Count",
                       color="Acq_Year" if n_years > 1 else None,
                       color_discrete_sequence=[C_BLUE, C_PURPLE, C_AMBER,
                                                C_GREEN, C_RED],
@@ -283,7 +283,7 @@ with tab_tmp:
                     .reset_index(name="Count")
                     .sort_values("Acq_Month"))
             fig = px.bar(mo, x="Acq_Month", y="Count",
-                         color="HLS granule count",
+                         color="Count",
                          color_continuous_scale=[[0, C_BLUE], [1, C_RED]],
                          labels={"Acq_Month": "Month", "Count": "HLS granules missing"},
                          template=T)
